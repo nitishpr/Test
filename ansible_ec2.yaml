@@ -1,0 +1,44 @@
+- hosts: localhost
+  tasks:
+    - name: Setting up the Security Group for new instance
+      ec2_group:
+          name: Ansible_Security_Group_AWS
+          description: Allowing Traffic on port 22, 80 and 443
+          region: us-east-1
+          rules:
+           - proto: tcp
+             from_port: 22
+             to_port: 22
+             cidr_ip: 0.0.0.0/0
+
+           - proto: tcp
+             from_port: 80
+             to_port: 80
+             cidr_ip: 0.0.0.0/0
+
+           - proto: tcp
+             from_port: 443
+             to_port: 443
+             cidr_ip: 0.0.0.0/0
+
+          rules_egress:
+           - proto: all
+             cidr_ip: 0.0.0.0/0
+          vpc_id: vpc-019e340cfdacc8fef
+
+    - name: Provision EC2 instance
+      ec2:
+         key_name: myPublic
+         region: us-east-1
+         instance_type: t2.micro
+         image: ami-0b69ea66ff7391e80
+         wait: yes
+         wait_timeout: 500
+         count: 1
+         instance_tags:
+            Name: AWS-Ansible
+         monitoring: no
+         vpc_subnet_id: subnet-0ee9de2a2626d76fb
+         assign_public_ip: yes
+         group: Ansible_Security_Group_AWS
+      register: ec2
